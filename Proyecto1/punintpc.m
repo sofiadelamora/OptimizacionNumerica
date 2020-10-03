@@ -26,31 +26,31 @@ function [x, y, mu] = punintpc(Q, A, c, b)
 % Parametros
 n = length(c);     % numero de variables a minimizar
 m = length(b);     % numero de restricciones
-maxiter = 100;     % iteraciones maximas
-tol = 1.e-06;      % tolerancia CNPO 
-citer = 0;          % contador iteraciones
+maxiter = 250;     % iteraciones maximas
+tol = 1e-08;      % tolerancia CNPO 
+citer = 0;         % contador iteraciones
 %--------------------------------------------------------------------------
 %Variables iniciales
-x =  A\b; %NO ESTOY SEGURA SI ESTA SE INICIALIZA ASÍ O CON 1'S TAMBIÉN
+x = ones(n,1); 
 y = ones(m,1);
 mu = ones(m,1);
 e = ones(m,1);
-eta = (0.5)*(y'*mu)/m; %sigma*y'mu/m, con sigma en [0,1, tomamos 1/2.
+eta = (0.5)*(y'*mu)/m; %sigma*y'mu/m, con sigma en [0,1] tomamos 1/2.
 %--------------------------------------------------------------------------
 H =[Q*x - A'*mu+c; A*x- y - b; mu.*y];
 norma = norm(H); %Norma de CNPO
-while(norma > tol & citer < maxiter)
+while(norma > tol && citer < maxiter)
     % Resuelve el sistema lineal de Newton para la trayectoria central
     Y=diag(y);
     U=diag(mu);
-
+ 
     r_x=Q*x-A'*mu+c; 
     r_y=A*x-y-b;     
     r_mu=Y*U*e-eta*e; 
 
     %Sistema 
-    z=-(r_x+A'*diag(mu./y)*r_y+A'*(r_mu./y));
     D= Q+A'*diag(mu./y)*A;
+    z=-(r_x+A'*diag(mu./y)*r_y+A'*(r_mu./y));
     
     %Pasos
     delta_x= z\D;
@@ -76,15 +76,16 @@ while(norma > tol & citer < maxiter)
     alfa =(0.9995)*min([1 alfa]);  
     
     % Nuevo punto
-       x = x + alfa*delta_x;
-       mu = mu + alfa*delta_mu;
-       y = y + alfa*delta_y;
+      
+        x = x + alfa*delta_x';
+        mu = mu + alfa*delta_mu;
+        y = y + alfa*delta_y;
     %Nueva eta
     eta = (0.5)*(y'*mu)/m;
-    %Condiciones necesarias de primer orden
-    H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];
-    norma = norm(H);
-    citer = citer + 1;
+    %CNPO
+        H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];    
+        norma = norm(H);
+        citer = citer + 1;
 end
 end
 
