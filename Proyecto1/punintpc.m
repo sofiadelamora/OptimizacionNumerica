@@ -2,20 +2,27 @@ function [x, y, mu] = punintpc(Q, A, c, b)
 % Resuelve el problema cuadratico por el metodo de punto interior
 % Min   (1/2)* x' * Q * x + c'* x
 % s.a.   A * x >= b
+%
 % Input:
+%
 % Q matriz de nxn simétrica y definida positiva
 % A matriz de mxn de rango completo con n>=m
 % c es vector columna real de tamaño n
 % b es vector columna real de tamaño m
-%Supuesto:
-% Suponemos que el conjunto de vectores x en R^n con Ax>b es distinto al
-% vacío
+%
 %Output:
+%
 % x vector real de tamaño n que aproxima la solucion del minimo local del
 %problema
 % y vector de tamaño m que contiene las variables de holgura del problema
 % mu vector de tamaño m que contiene el multiplicador de lagrange de la
 %restricción desigual
+%
+%Supuesto:
+%
+% Suponemos que el conjunto de vectores x en R^n con Ax>b es distinto al
+% vacío
+%
 %--------------------------------------------------------------------------
 % Optimización Numérica
 % Proyecto 1
@@ -23,7 +30,7 @@ function [x, y, mu] = punintpc(Q, A, c, b)
 % Luis Guillermo Pizana
 % Sofía De la Mora
 %--------------------------------------------------------------------------
-% Parametros
+% Parametros iniciales
 n = length(c);     % numero de variables a minimizar
 m = length(b);     % numero de restricciones
 maxiter = 250;     % iteraciones maximas
@@ -77,15 +84,20 @@ while(norma > tol && citer < maxiter)
     
     % Nuevo punto
       
-        x = x + alfa*delta_x';
-        mu = mu + alfa*delta_mu;
-        y = y + alfa*delta_y;
+    x = x + alfa*delta_x';
+    mu = mu + alfa*delta_mu;
+    y = y + alfa*delta_y;
     %Nueva eta
     eta = (0.5)*(y'*mu)/m;
+%     if(mod(citer,2)==0)
+%        eta = (0.5)*(y'*mu)/m;
+%      else
+%        eta = 0;
+%      end
     %CNPO
-        H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];    
-        norma = norm(H);
-        citer = citer + 1;
+    H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];    
+    norma = norm(H);
+    citer = citer + 1;
 end
 end
 
