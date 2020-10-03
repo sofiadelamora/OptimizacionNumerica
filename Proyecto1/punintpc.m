@@ -31,10 +31,11 @@ function [x, y, mu] = punintpc(Q, A, c, b)
 % Sofía De la Mora
 %--------------------------------------------------------------------------
 % Parametros iniciales
+format long
 n = length(c);     % numero de variables a minimizar
 m = length(b);     % numero de restricciones
-maxiter = 250;     % iteraciones maximas
-tol = 1e-08;      % tolerancia CNPO 
+maxiter = 100;     % iteraciones maximas
+tol = 1e-06;      % tolerancia CNPO 
 citer = 0;         % contador iteraciones
 %--------------------------------------------------------------------------
 %Variables iniciales
@@ -87,13 +88,14 @@ while(norma > tol && citer < maxiter)
     x = x + alfa*delta_x';
     mu = mu + alfa*delta_mu;
     y = y + alfa*delta_y;
+    
     %Nueva eta
-    eta = (0.5)*(y'*mu)/m;
-%     if(mod(citer,2)==0)
-%        eta = (0.5)*(y'*mu)/m;
-%      else
-%        eta = 0;
-%      end
+    %eta = (0.5)*(y'*mu)/m;
+     if(mod(citer,2)==0) %metodo predictor-corrector
+       eta = (0.5)*(y'*mu)/m;
+     else
+        eta = 0;
+     end
     %CNPO
     H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];    
     norma = norm(H);
