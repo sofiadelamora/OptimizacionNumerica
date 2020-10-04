@@ -92,9 +92,9 @@ while(norma > tol && citer < maxiter)
     %Nueva eta
     %eta = (0.5)*(y'*mu)/m;
      if(mod(citer,2)==0) %metodo predictor-corrector
-       eta = (0.5)*(y'*mu)/m;
+       eta = 0;
      else
-        eta = 0;
+        eta = (0.5)*(y'*mu)/m;
      end
     %CNPO
     H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];    
