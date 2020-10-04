@@ -31,21 +31,21 @@ for i = 1:k
     %Calcula H fijando W
     for j = 1:p
         Qh= W'*W;
-        ch = -X(1:r,j)'*W;%CREO QUE ESTO ESTA MAL
+        ch = -X(:, j)'*W;
         bh = zeros(k,1);
         Ah = eye(k);
-        [xh,yh,muh] = punintpc(Qh, Ah, ch', bh);
-        H(1:k,j)= xh;
+        [xh,~,~] = punintpc(Qh, Ah, ch', bh);
+        H(:,j) = xh; %Creo que aquí esta el error 1
 
     end
     % Calcula W fijando H
     for l = 1:r
         Qw= H'*H;
-        cw = -X(l,1:p)'*H; %ERROR
+        cw = -X(l, :)*H'; 
         bw = zeros(k,1);
         Aw = eye(k);
-        [xw,yw,muw] = punintpc(Qw, Aw, cw', bw);
-        W(l,:)= xw;
+        [xw,~,~] = punintpc(Qw, Aw, cw', bw);
+        W(l,:)= xw';%Creo que aquí esta el error 2
 
     end
 end 
