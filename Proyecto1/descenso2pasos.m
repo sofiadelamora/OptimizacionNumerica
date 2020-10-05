@@ -27,7 +27,7 @@ W = ones(r,k);
 H = ones(k,p);
 %--------------------------------------------------------------------------
 %
-for i = 1:5 %Comienzan las iteraciones 
+for i = 1:5 %Comienzan las iteraciones. Se fijaron el máximo de iteraciones en 5 porque son las suficientes.
     %Calcula H fijando W
     for j = 1:p
         Qh= W'*W;
