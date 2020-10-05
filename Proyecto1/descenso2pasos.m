@@ -26,26 +26,26 @@ function [W, H] = descenso2pasos(X, k)
 W = ones(r,k);      
 H = ones(k,p);
 %--------------------------------------------------------------------------
-%Calcula H y W
-for i = 1:k
+%
+for i = 1:k %Comienzan las iteraciones 
     %Calcula H fijando W
     for j = 1:p
         Qh= W'*W;
-        ch = -X(:, j)'*W;
+        ch = (-X(:, j)'*W)';
         bh = zeros(k,1);
         Ah = eye(k);
-        [xh,~,~] = punintpc(Qh, Ah, ch', bh);
-        H(:,j) = xh; %Creo que aquí esta el error 1
+        [xh,~,~] = punintpc(Qh, Ah, ch, bh);
+        H(:,j) = xh; 
 
     end
     % Calcula W fijando H
     for l = 1:r
-        Qw= H'*H;
-        cw = -X(l, :)*H'; 
+        Qw= H*H';
+        cw = (-X(l, :)*H')'; 
         bw = zeros(k,1);
         Aw = eye(k);
-        [xw,~,~] = punintpc(Qw, Aw, cw', bw);
-        W(l,:)= xw';%Creo que aquí esta el error 2
+        [xw,~,~] = punintpc(Qw, Aw, cw, bw);
+        W(l,:)= xw';
 
     end
 end 

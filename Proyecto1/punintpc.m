@@ -45,25 +45,28 @@ mu = ones(m,1);
 e = ones(m,1);
 eta = (0.5)*(y'*mu)/m; %sigma*y'mu/m, con sigma en [0,1] tomamos 1/2.
 %--------------------------------------------------------------------------
-H =[Q*x - A'*mu+c; A*x- y - b; mu.*y];
+%Matrices iniciales
+Y= diag(y);
+Y_in= diag(1./y);
+U= diag(mu);
+%--------------------------------------------------------------------------
+% Condiciones necesarias de primer orden (CNPO) para un minimo
+H =[Q*x - A'*mu+c; A*x- y - b; Y*U*e];
 norma = norm(H); %Norma de CNPO
-while(norma > tol && citer < maxiter)
-    % Resuelve el sistema lineal de Newton para la trayectoria central
-    Y=diag(y);
-    U=diag(mu);
- 
+while(norma > tol && citer < maxiter)% Iteraciones método de Newton
+    % Resuelve el sistema lineal de Newton para la trayectoria central 
     r_x=Q*x-A'*mu+c; 
     r_y=A*x-y-b;     
     r_mu=Y*U*e-eta*e; 
 
     %Sistema 
-    D= Q+A'*diag(mu./y)*A;
-    z=-(r_x+A'*diag(mu./y)*r_y+A'*(r_mu./y));
+    D = Q+A'*Y_in*U*A;
+    z = -(r_x+A'*Y_in*U*r_y+A'*Y_in*r_mu);
     
     %Pasos
-    delta_x= z\D;
-    delta_y=A*delta_x'+r_y;
-    delta_mu=-(diag(mu./y)*delta_y-r_mu./y);
+    delta_x= D\z;
+    delta_y=A*delta_x+r_y;
+    delta_mu=-Y_in*(U*delta_y+r_mu);
     
     %Recorte de paso
     bt = []; gm = [];
@@ -83,23 +86,24 @@ while(norma > tol && citer < maxiter)
     alfa = min([bt ; gm]);
     alfa =(0.9995)*min([1 alfa]);  
     
-    % Nuevo punto
+    % Actualizar puntos
       
-    x = x + alfa*delta_x';
+    x = x + alfa*delta_x;
     mu = mu + alfa*delta_mu;
     y = y + alfa*delta_y;
     
-    %Nueva eta
-    %eta = (0.5)*(y'*mu)/m;
-     if(mod(citer,2)==0) %metodo predictor-corrector
-       eta = 0;
-     else
-        eta = (0.5)*(y'*mu)/m;
-     end
-    %CNPO
-    H =[Q*x - A'*mu+c; A*x - y - b; mu.*y];    
-    norma = norm(H);
-    citer = citer + 1;
+    % Actualizar matrices
+    Y=diag(y);
+    U=diag(mu);
+    Y_in=diag(1./y); 
+    
+    %Actualizar eta con nuevas y y mu
+    eta = (0.5)*(y'*mu)/m;
+
+    %CNPO para minimo
+    H =[Q*x - A'*mu+c; A*x- y - b; Y*U*e];    
+    norma = norm(H); 
+    citer = citer + 1; %contador porque tenemos limitante de iteraciones
 end
 end
 
