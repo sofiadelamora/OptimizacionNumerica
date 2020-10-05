@@ -27,7 +27,7 @@ W = ones(r,k);
 H = ones(k,p);
 %--------------------------------------------------------------------------
 %
-for i = 1:k %Comienzan las iteraciones 
+for i = 1:5 %Comienzan las iteraciones 
     %Calcula H fijando W
     for j = 1:p
         Qh= W'*W;
@@ -35,6 +35,7 @@ for i = 1:k %Comienzan las iteraciones
         bh = zeros(k,1);
         Ah = eye(k);
         [xh,~,~] = punintpc(Qh, Ah, ch, bh);
+        %xh=quadprog(Qh,ch,-Ah,-bh);
         H(:,j) = xh; 
 
     end
@@ -45,6 +46,7 @@ for i = 1:k %Comienzan las iteraciones
         bw = zeros(k,1);
         Aw = eye(k);
         [xw,~,~] = punintpc(Qw, Aw, cw, bw);
+        %xw=quadprog(Qw,cw,-Aw,-bw);
         W(l,:)= xw';
 
     end
