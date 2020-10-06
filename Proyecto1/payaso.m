@@ -1,5 +1,12 @@
 %Se resuelve el problema de descenso en dos pasos con diferentes valores
 %para la imagen en grises del payaso
+%--------------------------------------------------------------------------
+% Optimización Numérica
+% Proyecto 1
+% 08 de octubre del 2020
+% Luis Guillermo Pizana
+% Sofía De la Mora
+%--------------------------------------------------------------------------
 clear all;
 clc;
 load clown; %Carga imagen con la que se trabaja

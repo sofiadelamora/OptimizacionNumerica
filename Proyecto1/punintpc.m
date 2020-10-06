@@ -35,7 +35,7 @@ format long
 n = length(c);     % numero de variables a minimizar
 m = length(b);     % numero de restricciones
 maxiter = 100;     % iteraciones maximas
-tol = 1e-06;      % tolerancia CNPO 
+tol = 1e-06;      % tolerancia de CNPO 
 citer = 0;         % contador iteraciones
 %--------------------------------------------------------------------------
 %Variables iniciales
