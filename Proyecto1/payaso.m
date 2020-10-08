@@ -9,13 +9,14 @@
 %--------------------------------------------------------------------------
 clear all;
 clc;
+warning('off');
 load clown; %Carga imagen con la que se trabaja
 colormap('gray');%Pone la imagen del payaso en grises
 image(X);
 %Para descenso2pasos. Descomentar lineas 37 y 48 de descenso2pasos y
 %comentar las lineas 38 y 49
 %Generamos las imagenes y las guardamos:
-for k = 80 %[5, 20, 30, 60, 80] %Calculamos para distintas k la factorizacion
+for k = [5, 20, 30, 60, 80] %Calculamos para distintas k la factorizacion
     tic;
     [W, H] = descenso2pasos(X, k);
     norm(X-W*H);

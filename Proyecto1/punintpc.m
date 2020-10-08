@@ -105,5 +105,6 @@ while(norma > tol && citer < maxiter)% Iteraciones método de Newton
     norma = norm(H); 
     citer = citer + 1; %contador porque tenemos limitante de iteraciones
 end
+
 end
 

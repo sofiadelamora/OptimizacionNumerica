@@ -23,13 +23,19 @@ function [W, H] = descenso2pasos(X, k)
 %--------------------------------------------------------------------------
 % Parametros iniciales
 [r,p] = size(X);    
-W = ones(r,k);      
+W = zeros(r,k)+1/2;      
 H = ones(k,p);
+maxiter=k;
+citer=0;
+W_ant = zeros(r,k);%matrix auxiliar para guardar la iteracion anterior     
+H_ant = zeros(k,p);%matrix auxiliar para guardar la iteracion anterior
+tol=1e-08; %tolerancia para las condiciones de paro
+norma = norm(W - W_ant,'fro') + norm(H - H_ant,'fro');%para condición de paro
 %--------------------------------------------------------------------------
-%
-for i = 1:5%Comienzan las iteraciones. Se fijaron el máximo de iteraciones 
-    %en 5 porque a partir de la sexta los cambios son mínimos.
+while(norma > tol && citer < maxiter)
     %Calcula H fijando W
+    H_ant = H;
+    W_ant = W;
     for j = 1:p
         Qh= W'*W;
         ch = (-X(:, j)'*W)';
@@ -51,5 +57,8 @@ for i = 1:5%Comienzan las iteraciones. Se fijaron el máximo de iteraciones
         W(l,:)= xw';
 
     end
+    norma = norm(W - W_ant,'fro') + norm(H - H_ant,'fro');
+    citer=citer+1;
+    
 end 
-
+fprintf("\nIteraciones: %i\n", citer);
