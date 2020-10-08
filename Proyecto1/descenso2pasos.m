@@ -27,37 +27,38 @@ W = zeros(r,k)+1/2;
 H = ones(k,p);
 maxiter=k;
 citer=0;
-W_ant = zeros(r,k);%matrix auxiliar para guardar la iteracion anterior     
-H_ant = zeros(k,p);%matrix auxiliar para guardar la iteracion anterior
+W_prev = zeros(r,k);%matrix para guardar la iteracion anterior     
+H_prev = zeros(k,p);%matrix para guardar la iteracion anterior
 tol=1e-08; %tolerancia para las condiciones de paro
-norma = norm(W - W_ant,'fro') + norm(H - H_ant,'fro');%para condición de paro
+norma = norm(W - W_prev,'fro') + norm(H - H_prev,'fro');%para condición de paro
 %--------------------------------------------------------------------------
-while(norma > tol && citer < maxiter)
+while(norma > tol && citer < maxiter) %todos iteran hasta maxiter (k)en el payaso
+    
+    H_prev = H;
+    W_prev = W;
+    
     %Calcula H fijando W
-    H_ant = H;
-    W_ant = W;
-    for j = 1:p
-        Qh= W'*W;
+    bh = zeros(k,1);
+    Ah = eye(k);
+    Qh= W'*W;
+    for j = 1:p   
         ch = (-X(:, j)'*W)';
-        bh = zeros(k,1);
-        Ah = eye(k);
         [xh,~,~] = punintpc(Qh, Ah, ch, bh);
         %xh=quadprog(Qh,ch,-Ah,-bh);
         H(:,j) = xh; 
 
     end
+    
     % Calcula W fijando H
+    Qw= H*H';
+    bw = zeros(k,1);
+    Aw = eye(k);
     for l = 1:r
-        Qw= H*H';
-        cw = (-X(l, :)*H')'; 
-        bw = zeros(k,1);
-        Aw = eye(k);
+        cw = (-X(l, :)*H')';   
         [xw,~,~] = punintpc(Qw, Aw, cw, bw);
         %xw=quadprog(Qw,cw,-Aw,-bw);
         W(l,:)= xw';
-
     end
-    norma = norm(W - W_ant,'fro') + norm(H - H_ant,'fro');
+    norma = norm(W - W_prev,'fro') + norm(H - H_prev,'fro');
     citer=citer+1;
 end 
-fprintf("\nIteraciones: %i\n", citer);
