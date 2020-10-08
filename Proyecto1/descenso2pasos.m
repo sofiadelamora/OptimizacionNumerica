@@ -59,6 +59,5 @@ while(norma > tol && citer < maxiter)
     end
     norma = norm(W - W_ant,'fro') + norm(H - H_ant,'fro');
     citer=citer+1;
-    
 end 
 fprintf("\nIteraciones: %i\n", citer);
