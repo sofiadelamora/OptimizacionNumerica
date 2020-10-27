@@ -29,7 +29,6 @@ tol=10e^-05;
 maxk=100;
 c_1=10e^-02;
 c_0=1;
-%x_0
 lambda=zeros(m,1);
 B_0= eye(n);
 k=0;
