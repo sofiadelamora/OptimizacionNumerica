@@ -29,9 +29,9 @@ k=0;
 c_1=10^-02; 
 Ck=1;%C_0 inicializada en 1
 lambda=zeros(m,1);% Multiplicador de Lagrange
-B_0= eye(n);% Hessiana con respecto a x del Lagrangeano
+B= eye(n);%B_0 Hessiana con respecto a x del Lagrangeano
 x = zeros(n,1);
-hx = feval(hx,x0);
+hx_eval = feval(hx,x0);
 gf = gradiente(fx,x0); %gradiente
 Ak = jacobiana(hx,x0) ; %jacobiana
 Cmax=10^5;
@@ -39,7 +39,7 @@ Cmax=10^5;
 %Valores de paro
 tol=10^-05;
 maxk=100;
-vk=[[gf + Ak'*lambda]'  hx'];
+vk=[[gf + Ak'*lambda]'  hx_eval'];
 %----------------------------------------------------------------------
 %Metodo
 %EVALUR EN X_0
@@ -47,41 +47,41 @@ while ((norm(vk) >= tol) && (k < maxk))
     
     %Resuelve problema cuadratico
     W = [ B  Ak' ; Ak zeros(m)];  %Matriz del Sistema Lineal
-    ld = -[gf; hx]; %Lado Derecho
+    ld = -[gf; hx_eval]; %Lado Derecho
    
     sol = W\ld;
     pk = sol(1:n);
-    lambda = ps(n+1:n+m);  %Nuevo multiplicador de Lagrange (lambda k+1)
+    lambda = sol(n+1:n+m);  %Nuevo multiplicador de Lagrange (lambda k+1)
     
     %------------------------------------------------------------
     %Guardar parámetros de la iteración k
-    Ck_ant=Ck
-    x_ant=x
-    h_ant = hx;
+    Ck_ant=Ck;
+    x_ant=x;
+    h_ant = hx_eval;
     g_ant = gf;
     A_ant = Ak;
     lambda_ant = lambda;
     
     %------------------------------------------------------------
     %Escoger (actualizar) Ck+1
-    if gf'*pk-Ck_ant*norm(hx,1)<0
+    if gf'*pk-Ck_ant*norm(hx_eval,1)<0
         Ck= Ck_ant;
     else
-        Ck=min(Cmax, abs(gf'*pk)/norm(hx,1)+1);    
+        Ck=min(Cmax, abs(gf'*pk)/norm(hx_eval,1)+1);    
     end
     
     %------------------------------------------------------------
     %Actualizar 
+    alfak=1; %SI? CADA ITERACIÓN SE HACE 1 Y LUEGO SE RECORTA??
     x = x + alfak*pk; %x_k+1
     s = x -x_ant; %s_k
     y = [gf + Ak'*lambda] - [gf + Ak'*lambda]; %y_k
-    hx = feval(hx,x); 
+    hx_eval = feval(hx,x); 
     %------------------------------------------------------------
     %Recorte de paso
-    alfak=1; %SI? CADA ITERACIÓN SE HACE 1 Y LUEGO SE RECORTA??
     phik = feval(fx,x_ant)+feval(hx,x_ant)'*lambda+Ck/2*norm(feval(hx,x_ant))^2;
     phik_muno = feval(fx,x)+feval(hx,x)'*lambda+Ck/2*norm(feval(hx,x))^2;
-    Dk= feval(gf, x_ant)' * pk - Ck* norm(feval(hx,x),1);
+    Dk= gradiente(fx,x)' * pk - Ck* norm(feval(hx,x),1);
     while (phik_muno> phik + alfak * c_1 * Dk)
        alfak=alfak/2; 
     end
@@ -114,9 +114,7 @@ while ((norm(vk) >= tol) && (k < maxk))
 
    %------------------------------------------------------------
    % Actualizar vk
-   vk=[[gf + Ak'*lambda]'  hx'];
-   
-   
+   vk=[[gf + Ak'*lambda]'  hx_eval'];
 end
 end
 %------------------------------------------------------------
