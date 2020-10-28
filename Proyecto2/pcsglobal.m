@@ -26,7 +26,7 @@ function [x, lambda, k] = pcsglobal(fx, hx, x0)
 n = length(x0);
 m = length(hx);
 k=0;
-c_1=10e^-02; %FALTA ESTO
+c_1=10^-02; 
 Ck=1;%C_0 inicializada en 1
 lambda=zeros(m,1);% Multiplicador de Lagrange
 B_0= eye(n);% Hessiana con respecto a x del Lagrangeano
@@ -34,56 +34,58 @@ x = zeros(n,1);
 hx = feval(hx,x0);
 gf = gradiente(fx,x0); %gradiente
 Ak = jacobiana(hx,x0) ; %jacobiana
-alfak=1;
+Cmax=10^5;
 %----------------------------------------------------------------------
 %Valores de paro
-tol=10e^-05;
+tol=10^-05;
 maxk=100;
-r=norm([[gf + Ak'*lambda]'  hx']);
+vk=[[gf + Ak'*lambda]'  hx'];
 %----------------------------------------------------------------------
 %Metodo
-while ((fin >= tol) & (iter < maxiter) & (deltak >= tol)
+%EVALUR EN X_0
+while ((norm(vk) >= tol) && (k < maxk))
+    
     %Resuelve problema cuadratico
     W = [ B  Ak' ; Ak zeros(m)];  %Matriz del Sistema Lineal
     ld = -[gf; hx]; %Lado Derecho
    
     sol = W\ld;
     pk = sol(1:n);
-    
-    %Escoger Ck+1
-    if gf'*pk/norm(hx,1)>0
-        Ck= gf'*pk/norm(hx,1);
-    elseif gf'*pk/norm(hx,1)== 0
-        Ck=1;
-    else 
-        Ck=-gf'*pk/norm(hx,1);
-    end
-        
-    %Iteracion anteior
-    x_ant = x;
-    h_ant = hx;
-    g_ant = gf;
-    A_ant = dh;
-    lambda_ant = lambda;
-    
-    %Actualizar x
-    x = x+alfak*pk;
     lambda = ps(n+1:n+m);  %Nuevo multiplicador de Lagrange (lambda k+1)
     
-    hx = feval(hx,x);
-    gf = gradiente(fx,x);
-    Ak = jacobiana1(hx,x);
+    %------------------------------------------------------------
+    %Guardar parámetros de la iteración k
+    Ck_ant=Ck
+    x_ant=x
+    h_ant = hx;
+    g_ant = gf;
+    A_ant = Ak;
+    lambda_ant = lambda;
     
+    %------------------------------------------------------------
+    %Escoger (actualizar) Ck+1
+    if gf'*pk-Ck_ant*norm(hx,1)<0
+        Ck= Ck_ant;
+    else
+        Ck=min(Cmax, abs(gf'*pk)/norm(hx,1)+1);    
+    end
+    
+    %------------------------------------------------------------
+    %Actualizar 
+    x = x + alfak*pk; %x_k+1
+    s = x -x_ant; %s_k
+    y = [gf + Ak'*lambda] - [gf + Ak'*lambda]; %y_k
+    hx = feval(hx,x); 
+    %------------------------------------------------------------
     %Recorte de paso
+    alfak=1; %SI? CADA ITERACIÓN SE HACE 1 Y LUEGO SE RECORTA??
     phik = feval(fx,x_ant)+feval(hx,x_ant)'*lambda+Ck/2*norm(feval(hx,x_ant))^2;
-    phik_uno = feval(fx,x)+feval(hx,x)'*lambda+Ck/2*norm(feval(hx,x))^2;
+    phik_muno = feval(fx,x)+feval(hx,x)'*lambda+Ck/2*norm(feval(hx,x))^2;
     Dk= feval(gf, x_ant)' * pk - Ck* norm(feval(hx,x),1);
-    while (phik_uno> phik + alfak * Dk)
+    while (phik_muno> phik + alfak * c_1 * Dk)
        alfak=alfak/2; 
     end
     
-    s = x -x_ant;
-    y = [g_ant + A_ant'*lambda] - [gf + Ak'*lambda];
     %------------------------------------------------------------
     %Actualizacion Hessiana con BFGS powell
     if s'*y <= 0.2*s'*B*s
@@ -98,6 +100,24 @@ while ((fin >= tol) & (iter < maxiter) & (deltak >= tol)
     else
         B = B - (B*s*s'*B)/(s'*B*s) + (r*r')/(s'*r);
     end
-    
+   %------------------------------------------------------------
+   %Nuevo multiplicador de Lagrange
+    %Resolviendo min || gf_k+1 +A_k+1' * lambda||2
+                %lambda en R^m
+   %Solucion: lambda= -(A_k+1'*A_k+1)^-1*A_k+1*gf_k+1
+   gf = gradiente(fx,x); %gradiente en k+1
+   Ak = jacobiana(hx,x) ; %jacobiana en k+1
+   lambda= -(Ak*Ak')\Ak*gf;
+   %------------------------------------------------------------
+   % Actualizar iteracion
+   k=k+1;
+
+   %------------------------------------------------------------
+   % Actualizar vk
+   vk=[[gf + Ak'*lambda]'  hx'];
+   
+   
 end
 end
+%------------------------------------------------------------
+
