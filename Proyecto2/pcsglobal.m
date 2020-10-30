@@ -65,7 +65,7 @@ while ((norm(vk) >= tol) && (k < maxk))
     Dk= gradiente(fx,x)' * pk - Ck* norm(feval(hx,x),1);
     max_iter=2500;
     t=0;
-    while ( Fn_merito(fx,hx,x+alfak*pk,Ck) > Fn_merito(fx,hx,x,Ck)+alfak*c_1*Dk) 
+    while ( merit_fn(fx,hx,x+alfak*pk,Ck) > merit_fn(fx,hx,x,Ck)+alfak*c_1*Dk) 
        alfak=alfak/2;
        t=t+1;
     end 
