@@ -22,19 +22,20 @@ function [x, lambda, k] = pcsglobal(fx, hx, x0)
 %Proyecto 2
 %05 noviembre 2020
 %-----------------------------------------------------------------------
+format long e
 %Valores iniciales
 n = length(x0);
 m = length(hx);
 k=0;
 c_1=10^-02; 
-Ck=1;%C_0 inicializada en 1
+Ck=1; %C_0 inicializada en 1
 lambda=zeros(m,1);% Multiplicador de Lagrange
 B= eye(n);%B_0 Hessiana con respecto a x del Lagrangeano
-x = zeros(n,1);
-hx_eval = feval(hx,x0);
+hx_eval = feval(hx,x0); %Restricciones evaluadas en la
 gf = gradiente(fx,x0); %gradiente
 Ak = jacobiana(hx,x0) ; %jacobiana
 Cmax=10^5;
+x=x0;%el vector x inicia en x_0
 %----------------------------------------------------------------------
 %Valores de paro
 tol=10^-05;
@@ -42,18 +43,33 @@ maxk=100;
 vk=[[gf + Ak'*lambda]'  hx_eval'];
 %----------------------------------------------------------------------
 %Metodo
-%EVALUR EN X_0
 while ((norm(vk) >= tol) && (k < maxk))
     
     %Resuelve problema cuadratico
-    W = [ B  Ak' ; Ak zeros(m)];  %Matriz del Sistema Lineal
-    ld = -[gf; hx_eval]; %Lado Derecho
+    W = [ B  Ak' ; Ak zeros(m)];  %Matriz del sistema lineal
+    ld = -[gf; hx_eval]; %Lado derecho
    
     sol = W\ld;
-    pk = sol(1:n);
-    lambda = sol(n+1:n+m);  %Nuevo multiplicador de Lagrange (lambda k+1)
+    pk = sol(1:n); %Solución en la iteración k 
+    lambda = sol(n+1:n+m);%Nuevo multiplicador de Lagrange (lambda k+1)
+
+    %------------------------------------------------------------
+    %Escoger (actualizar) Ck+1
+    if gf'*pk-Ck*norm(hx_eval,1)>=0
+        Ck=min(Cmax, abs(gf'*pk)/norm(hx_eval,1)+1);   
+    end
     
     %------------------------------------------------------------
+    %Busqueda en linea
+    alfak=1;
+    Dk= gradiente(fx,x)' * pk - Ck* norm(feval(hx,x),1);
+    max_iter=2500;
+    t=0;
+    while ( Fn_merito(fx,hx,x+alfak*pk,Ck) > Fn_merito(fx,hx,x,Ck)+alfak*c_1*Dk) 
+       alfak=alfak/2;
+       t=t+1;
+    end 
+        %------------------------------------------------------------
     %Guardar parámetros de la iteración k
     Ck_ant=Ck;
     x_ant=x;
@@ -61,31 +77,13 @@ while ((norm(vk) >= tol) && (k < maxk))
     g_ant = gf;
     A_ant = Ak;
     lambda_ant = lambda;
-    
     %------------------------------------------------------------
-    %Escoger (actualizar) Ck+1
-    if gf'*pk-Ck_ant*norm(hx_eval,1)<0
-        Ck= Ck_ant;
-    else
-        Ck=min(Cmax, abs(gf'*pk)/norm(hx_eval,1)+1);    
-    end
-    
-    %------------------------------------------------------------
-    %Actualizar 
-    alfak=1; %SI? CADA ITERACIÓN SE HACE 1 Y LUEGO SE RECORTA??
+    %Actualizar en k+1
     x = x + alfak*pk; %x_k+1
     s = x -x_ant; %s_k
     y = [gf + Ak'*lambda] - [gf + Ak'*lambda]; %y_k
     hx_eval = feval(hx,x); 
     %------------------------------------------------------------
-    %Recorte de paso
-    phik = feval(fx,x_ant)+feval(hx,x_ant)'*lambda+Ck/2*norm(feval(hx,x_ant))^2;
-    phik_muno = feval(fx,x)+feval(hx,x)'*lambda+Ck/2*norm(feval(hx,x))^2;
-    Dk= gradiente(fx,x)' * pk - Ck* norm(feval(hx,x),1);
-    while (phik_muno> phik + alfak * c_1 * Dk)
-       alfak=alfak/2; 
-    end
-    
     %------------------------------------------------------------
     %Actualizacion Hessiana con BFGS powell
     if s'*y <= 0.2*s'*B*s
@@ -95,10 +93,10 @@ while ((norm(vk) >= tol) && (k < maxk))
        r = y;
     end
     
+    B = B - (B*s*s'*B)/(s'*B*s) + (r*r')/(s'*r);
+    
     if cond(B)> 10^4
         B=eye(n);
-    else
-        B = B - (B*s*s'*B)/(s'*B*s) + (r*r')/(s'*r);
     end
    %------------------------------------------------------------
    %Nuevo multiplicador de Lagrange
@@ -111,11 +109,13 @@ while ((norm(vk) >= tol) && (k < maxk))
    %------------------------------------------------------------
    % Actualizar iteracion
    k=k+1;
-
    %------------------------------------------------------------
    % Actualizar vk
    vk=[[gf + Ak'*lambda]'  hx_eval'];
 end
+disp(' iteraciones     Norma de las CNPO')
+disp('-------------------------------------')
+disp(sprintf(' %i      %3.16f',k, norm(vk)))
 end
 %------------------------------------------------------------
 
