@@ -1,4 +1,5 @@
-%% Proyecto 2 Optimización Numérica
+
+% Proyecto 2 Optimización Numérica
 %Luis Guillermo Pizana
 %Sofia De la Mora 
 %Optimizacion Numerica
@@ -8,28 +9,74 @@
 %np = 21 puntos.
 %Se fija el primer punto en u1 = (1, 0, 0)'
 clc;clear all;close all;
+tic;
 
 % Datos de esfera
-
-np=21;
-x = randn(3*np,1);
+figure(1) %se abre la primera figura
+n=50; %número de meridiano en la esfera
+np=21; %puntos
 
 %Dibujos
-[X, Y, Z]=sphere(50);
+
+sphere(n);
 axis equal
 hold on
+
 %Graficar puntos
-for k =1:np
-    z = x(3*(k-1)+1:3*k);
-    plot3(z(1), z(2), z(3),'dr','Linewidth',3)
+P = randn(3,np); % matriz aleatoria %P(:,j) es vector en R^3
+x0 = zeros(3*np,1);
+for j=1:np
+    v= P(:,j); 
+    nv= norm(v);
+    P(:,j)=v/nv;
+    x(3*(j-1)+1:3*j) = P(:,j);
+    %plot3(P(1,j), P(2,j), P(3,j), 'rd', 'Linewidth',3)
     hold on
 end
-pause
-close all
+title('Puntos en la esfera')
+
+x0 = P(:);
 
 % Llamar funciones
 fx = 'fesfera';     % funcion objetivo 
-gx = 'hesfera';      % restricciones 
+hx = 'hesfera';     % restricciones 
 
-%Llamamos al codigo para encontrar el minimo
-[x,lambda,iter] = pcsgobal(fx,x,x);
+%Llamamos al método 'pcsgblobal' para encontrar el minimo
+[x,lambda,~] = pcsglobal(fx,hx,x0);
+
+    % Graficamos la esfera y los resultados 
+figure(2)
+sphere(n) %esfera unitaria 
+axis equal %para que plotee efericamente 
+hold on %para añadir grafica
+z = zeros(3, np);
+for k =1:np
+    z = x(3*(k-1)+1:3*k);
+    plot3(z(1), z(2), z(3),'db','Linewidth',3)
+    hold on
+end
+title('Minimo obtenido con pcsglobal')
+
+
+% Ahora la solución pero con Matlab
+options.MaxFunctionEvaluations = 1.e+05;
+options = optimset('Algorithm','sqp');
+[xf, fx, exitflag, output] = fmincon('fesfera',x,[],[],[],[],[],[],'hesfera_matlab');
+
+figure(3)
+sphere(n) %esfera unitaria 
+axis equal %para que plotee efericamente 
+hold on %para añadir grafica
+y = zeros(3, np);
+for k =1:np
+    y = xf(3*(j-1)+1:3*j);
+    plot3(y(1), y(2), y(3),'db','Linewidth',3)
+    hold on
+end
+title('Minimo obtenido con matlab')
+
+fx-fesfera(x)
+
+toc;
+
+

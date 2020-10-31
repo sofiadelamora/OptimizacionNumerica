@@ -8,7 +8,8 @@ ep = 1e-05;
 jh = zeros(m,n);
 
 for j = 1:n
-    y = x0; y(j)=y(j) + ep;
+    y = x0; 
+    y(j)=y(j) + ep;
     hy = feval(hx,y);
     jh(:,j) = (hy-h)/ep;
 end

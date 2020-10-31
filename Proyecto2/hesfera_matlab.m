@@ -1,4 +1,4 @@
-function [h] = hesfera(x)
+function [g,h] = hesfera(x)
 % Función de restricciones del problema de np puntos en la esfera unitaria
 % de dimensión tres.
 % Codigo de clase

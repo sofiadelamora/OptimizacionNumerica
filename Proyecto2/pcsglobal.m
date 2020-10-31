@@ -25,22 +25,24 @@ function [x, lambda, k] = pcsglobal(fx, hx, x0)
 format long e
 %Valores iniciales
 n = length(x0);
-m = length(hx);
-k=0;
-c_1=10^-02; 
-Ck=1; %C_0 inicializada en 1
-lambda=zeros(m,1);% Multiplicador de Lagrange
-B= eye(n);%B_0 Hessiana con respecto a x del Lagrangeano
-hx_eval = feval(hx,x0); %Restricciones evaluadas en la
-gf = gradiente(fx,x0); %gradiente
-Ak = jacobiana(hx,x0) ; %jacobiana
-Cmax=10^5;
-x=x0;%el vector x inicia en x_0
+hx_eval = feval(hx,x0); %Restricciones evaluadas en el punto inicial
+m = length(hx_eval);
+k = 0;
+c_1 = 10^-02; 
+Ck = 1; %C_0 inicializada en 1
+Cmax = 10^5;
+x = x0;%el vector x inicia en x_0
+
+lambda = zeros(m,1);% Multiplicador de Lagrange
+B = eye(n);%B_0 Hessiana con respecto a x del Lagrangeano
+
+gf = gradiente(fx, x0); %gradiente de fx en el punto inicial
+Ak = jacobiana(hx, x0); %jacobiana de las restricciones en el punto inicial
 %----------------------------------------------------------------------
 %Valores de paro
 tol=10^-05;
 maxk=100;
-vk=[[gf + Ak'*lambda]'  hx_eval'];
+vk=[[gf + Ak'*lambda]'  hx_eval']; %Condiciones Necesarias de Primer Orden
 %----------------------------------------------------------------------
 %Metodo
 while ((norm(vk) >= tol) && (k < maxk))

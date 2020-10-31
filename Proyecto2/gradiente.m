@@ -9,7 +9,8 @@ ep = 1e-05;
 f0 = feval(fx,x0);
 
 for k = 1:n
-    xk = x0; xk(k) = xk(k) + ep;
+    xk = x0; 
+    xk(k) = xk(k) + ep;
     gf(k) = (feval(fx,xk)-f0)/ep;
 end
 end
