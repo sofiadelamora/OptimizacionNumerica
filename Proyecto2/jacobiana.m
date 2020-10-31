@@ -1,5 +1,10 @@
 function [jh] = jacobiana(hx,x0)
 % Calcula la matriz jacobiana de hx : R^n -> R^m
+% Optimizacion numerica
+% Codigo de clase
+% Luis Guillermo Pizaña
+% Sofia De la Mora
+% (Proyecto 2)
 
 n = length(x0);
 h = feval(hx, x0);
